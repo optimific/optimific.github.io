@@ -1,0 +1,13 @@
+{
+    "path" : "~/Documents/optimific-test",
+    "sortOrder" : [
+        {
+            "ascending" : false,
+            "columnIndex" : 4
+        },
+        {
+            "ascending" : false,
+            "columnIndex" : 2
+        }
+    ]
+}
