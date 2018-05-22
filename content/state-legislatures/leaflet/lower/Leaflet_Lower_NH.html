@@ -1,0 +1,116 @@
+
+<head>
+<title></title>
+  <link rel="stylesheet" href="scripts/leaflet.css"/>
+  <script src="scripts/leaflet.js"></script>
+  <script src="scripts/jquery-2.1.1.min.js"></script>
+  <script src="scripts/leaflet-search.js"></script>
+  <link rel="stylesheet" href="scripts/leaflet-search.css"/>
+
+  <style>
+
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    #map {
+      width: 800px;
+      height: 600px;
+    }
+
+
+
+/* css to customize Leaflet default styles  */
+
+.leaflet-popup-content-wrapper {
+    background:#2c3e50;
+    color:#fff;
+    font-size:14px;
+    font-family: Lato, sans-serif;
+
+    }
+
+.leaflet-popup-content-wrapper a {
+  color:rgba(255,255,255,0.5);
+  }
+
+.leaflet-popup-tip-container {
+    width:100px;
+    height:20px;
+    }
+
+.leaflet-popup-tip {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    }
+
+
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<script src="js/nh_lower.js"></script>
+<script>
+
+  var data = statesData;
+  var map = new L.Map('map', {zoom: 7, center: new L.latLng([43.3934, -71.3924]) });
+  L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png', {
+    minZoom: 5,
+    maxZoom: 18,
+    attribution: '&copy; <a href="http://openstreetmap.org">OpenStreetMap</a> | ' +
+      '&copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+    id: 'mapbox.light'
+  }).addTo(map);
+
+
+  var featuresLayer = new L.GeoJSON(data, {
+      style: function(feature) {
+              var fillColor,
+          party = feature.properties.party;
+      if ( party == "Republican" ) fillColor = "#BF1800";
+      else if ( party == "Democratic" ) fillColor = "#1054BF";
+      else fillColor = "#f7f7f7";  // no data
+      return { color: "#ffffff", weight: 1, fillColor: fillColor, fillOpacity: .6, opacity: .8 };
+    },
+      onEachFeature: function(feature, layer) {
+        layer.bindPopup( "<strong>District " + feature.properties.NAME +
+        "</strong><br/><strong>Party: </strong>" + feature.properties.party +
+        "</br><strong>Legislator: </strong>" + feature.properties.full_name + "</br>"
+        + feature.properties.D_2016 + "% Clinton</br>" +
+       feature.properties.R_2016 + "% Trump");
+
+      }
+    });
+  map.addLayer(featuresLayer);
+
+
+  var searchControl = new L.Control.Search({
+    layer: featuresLayer,
+    propertyName: 'NAME',
+    marker: false,
+    moveToLocation: function(latlng, title, map) {
+      //map.fitBounds( latlng.layer.getBounds() );
+      var zoom = map.getBoundsZoom(latlng.layer.getBounds());
+        map.setView(latlng, zoom); // access the zoom
+    }
+  });
+  searchControl.on('search:locationfound', function(e) {
+
+    //console.log('search:locationfound', );
+    //map.removeLayer(this._markerSearch)
+    e.layer.setStyle({color: '#fff', weight: 7});
+    if(e.layer._popup)
+      e.layer.openPopup();
+  }).on('search:collapsed', function(e) {
+    featuresLayer.eachLayer(function(layer) { //restore feature color
+      featuresLayer.resetStyle(layer);
+    });
+  });
+
+  map.addControl( searchControl );  //inizialize search control
+
+</script>
+</body>
+</html>
